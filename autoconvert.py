@@ -18,12 +18,16 @@
 import pyinotify
 import ConfigParser
 import time
+import os
 
 class EventHandler(pyinotify.ProcessEvent):
 	def __init__(self, file):
 		''' initiates EventHandler with file where to write changes '''
 		pyinotify.ProcessEvent.__init__(self)
 		self.file = file
+		if not os.path.exists(self.file):
+			fileHandler = open(self.file, 'w')
+			fileHandler.close()
 
 	def process_IN_CLOSE_WRITE(self, event):
 		''' event handler for close file after writing event - append path '''
