@@ -63,14 +63,18 @@ class EventHandler(pyinotify.ProcessEvent):
      
 # parse config file
 config = ConfigParser.ConfigParser()
-config.read('settings.conf')
+if os.path.exists('settings.conf'):
+	config.read('settings.conf')
 
-# settings
-watchingMask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE   
-watchingDir = config.get('Main', 'watchingDirectory')
-fooFile = config.get('Main', 'fooFile')
+	# settings
+	watchingMask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE   
+	watchingDir = config.get('Main', 'watchingDirectory')
+	fooFile = config.get('Main', 'fooFile')
+else:
+	watchingDir = '/home'
+	fooFile = '/tmp/fooFile'
 
-# initialise
+# initialize
 watchManager = pyinotify.WatchManager()
 handler = EventHandler(fooFile)
 notifier = pyinotify.Notifier(watchManager, handler)
