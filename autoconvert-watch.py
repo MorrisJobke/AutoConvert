@@ -19,62 +19,55 @@ import pyinotify
 import ConfigParser
 import time
 import os
-
-import exceptions
-
-class FileIsDirException(exceptions.Exception):
-	def __init__(self):
-		return
-	
-	def __str__(self):
-		print '', 'file is an directory'
+import sqlite3
 
 class EventHandler(pyinotify.ProcessEvent):
-	def __init__(self, fileHandler):
+	def __init__(self, databaseFile):
 		''' initializes EventHandler '''
 		pyinotify.ProcessEvent.__init__(self)
-		self.filehandler = fileHandler
-		self.filehandler.clearFile()
+		self.db = sqlite3.connect(databaseFile)
+	
+		cursor = self.db.cursor()
+		sql = """
+		CREATE TABLE IF NOT EXISTS incoming (
+			date INTEGER,
+			file TEXT
+		)"""
+		cursor.execute(sql);
+		cursor.close()
+		
+		self.db.commit()
+		
+	def __del__(self):
+		''' destructor '''
+		self.db.close()
 
 	def process_IN_CLOSE_WRITE(self, event):
-		''' event handler for close file after writing event - append path '''
+		''' event handler for close file after writing event - insert path '''
 		print 'close:\t', event.pathname
-		self.filehandler.appendPath(event.pathname)
-				
+		self.delete(event.pathname) # TODO use UPDATE
+		self.insert(event.pathname)
+	
 	def process_IN_DELETE(self, event):
-		''' event handler for delete event - removes entries'''
+		''' event handler for delete event - removes path'''
 		print 'delete:\t', event.pathname
-		self.fileHandler.clearFile(event.pathname)
-
-class FileHandler():
-	def __init__(self, file):
-		''' initializes FileHandler with given file and create this if not exists '''
-		self.file = file
-		if not os.path.exists(self.file):
-			fh = open(self.file, 'w')
-			fh.close()
-		elif os.path.isdir(self.file):
-			raise FileIsDirException()
+		self.delete(event.pathname)
 		
-	def appendPath(self, path):
-		''' append a line with current unixtimestamp and given path '''
-		self.clearFile(path)
-		fh = open(self.file, 'a')
-		fh.write(str(time.time()) + '\t' + path + '\n')
-		fh.close()
+	def insert(self, path):
+		''' insert path and timestamp '''
+		cursor = self.db.cursor()
+		sql = 'INSERT INTO incoming VALUES (?, ?)'
+		cursor.execute(sql, [int(time.time()), path])
+		cursor.close()
+		self.db.commit()
 		
-	def clearFile(self, path=None):
-		''' deletes all lines with given path or non-existant path '''
-		tmp = []
-		fh = open(self.file, 'r')
-		for line in fh:
-			tmpPath = line.split('\t')[1][:-1]
-			if not tmpPath == path and os.path.exists(tmpPath):
-				tmp.append(line)
-		fh.close()
-		fh = open(self.file, 'w')
-		fh.writelines(tmp)
-		fh.close()		
+	def delete(self, path):
+		''' delete path from db '''
+		cursor = self.db.cursor()
+		sql = 'DELETE FROM incoming WHERE file=?'
+		cursor.execute(sql, (path,))
+		cursor.close()
+		self.db.commit()
 
 if __name__ == '__main__':
 	#####################
@@ -87,28 +80,21 @@ if __name__ == '__main__':
 		#################
 		# load settings #
 		#################
-		watchingMask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE   
 		watchingDir = config.get('Main', 'watchingDirectory')
-		fooFile = config.get('Main', 'fooFile')
+		databaseFile = config.get('Main', 'database')
 	else:
 		###############
 		# set default #
 		###############
 		watchingDir = '/home'
-		fooFile = '/tmp/fooFile'
-	try:
-		fh = FileHandler(fooFile)
-	except FileIsDirException:
-		print 'Error: fooFile is directory - please adjust settings.conf'
-		# TODO fh doesn't exists
-	except Exception, e:
-		raise e
+		databaseFile = '/tmp/files.db'
+	watchingMask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE
     
     ##############
     # initialize #
 	##############
 	watchManager = pyinotify.WatchManager()
-	handler = EventHandler(fh)
+	handler = EventHandler(databaseFile)
 	notifier = pyinotify.Notifier(watchManager, handler)
 	watchManager.add_watch(watchingDir, watchingMask)
 	notifier.loop()
