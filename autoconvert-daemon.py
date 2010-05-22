@@ -151,8 +151,7 @@ class AutoEncode():
 		
 	def encode(self,iF, oF):
 		times = {}
-		presets = ['slow', 'medium', 'normal', 'fast', 'faster', 'default', 'veryfast', 'ultrafast', 'veryslow']
-		presets = ['hq', 'max']
+		presets = ['slow', 'medium', 'normal', 'fast', 'faster', 'default', 'veryfast', 'ultrafast', 'veryslow', 'hq', 'max']
 		for preset in presets:
 			print preset
 			f = string.rsplit(oF,'.',1)
