@@ -168,7 +168,7 @@ class AutoEncode():
 				[	'ffmpeg',
 					'-y', 
 					'-i', 
-					"'" + iF + "'", 
+					iF, 
 					'-deinterlace', 
 					'-vcodec',
 					'libx264',
@@ -182,7 +182,7 @@ class AutoEncode():
 					'0',
 					'-crf',
 					'22',
-					"'" + outF + "'"
+					outF
 				], 
 				stdout=subprocess.PIPE,
 				stderr=subprocess.STDOUT
