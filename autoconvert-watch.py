@@ -38,7 +38,7 @@ LEVELS = {'debug': logging.DEBUG,
 class EventHandler(pyinotify.ProcessEvent):
 	def __init__(self, databaseFile):
 		''' initializes EventHandler '''
-		log.info('init EventHandler')
+		log.debug('init EventHandler')
 		pyinotify.ProcessEvent.__init__(self)
 		self.db = sqlite3.connect(databaseFile)
 	
@@ -60,6 +60,12 @@ class EventHandler(pyinotify.ProcessEvent):
 	def process_IN_CLOSE_WRITE(self, event):
 		''' event handler for close file after writing event - insert path '''
 		log.info('close:\t' + event.pathname)
+		self.delete(event.pathname) # TODO use UPDATE
+		self.insert(event.pathname)
+
+	def process_IN_MOVED_TO(self, event):
+		''' event handler for move file event - insert path '''
+		log.info('moved:\t' + event.pathname)
 		self.delete(event.pathname) # TODO use UPDATE
 		self.insert(event.pathname)
 		
@@ -94,7 +100,9 @@ if __name__ == '__main__':
 	if len(sys.argv) > 1:
 		level_name = sys.argv[1]
 		level = LEVELS.get(level_name, logging.NOTSET)
-	level = logging.DEBUG
+	# TMP vvvvvvvvvvvvvv
+	level = logging.INFO
+	# TMP ^^^^^^^^^^^^^^
 	log.setLevel(level)
 	#####################
 	# parse config file #
@@ -114,7 +122,7 @@ if __name__ == '__main__':
 		###############
 		watchingDir = '/home'
 		databaseFile = '/tmp/files.db'
-	watchingMask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE
+	watchingMask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE | pyinotify.IN_MOVED_TO
     
     ##############
     # initialize #
