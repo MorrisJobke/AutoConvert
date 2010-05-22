@@ -165,7 +165,7 @@ class AutoEncode():
 			log.info('out:\t%s'%outF)
 			log.info('start:\t%s'%time.strftime('%H:%M:%S',time.localtime(t1)))
 			print subprocess.Popen(
-				'ffmpeg -y -i "%s" -deinterlace -vcodec libx264 -vpre %s -f mp4 -acodec libfaac -threads 0 -crf 22 "%s"'%(iF, preset, outF)
+				'ffmpeg -y -i "%s" -deinterlace -vcodec libx264 -vpre %s -f mp4 -acodec libfaac -threads 0 -crf 22 "%s"'%(iF, preset, outF),
 				'''[	'ffmpeg',
 					'-y', 
 					'-i', 
