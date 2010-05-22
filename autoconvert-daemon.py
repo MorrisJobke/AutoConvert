@@ -28,6 +28,20 @@ import gtk
 
 import pprint
 
+import gobject
+
+import sys
+import logging
+import logging.handlers
+
+LOGFILE = './log-daemon'
+LOGFORMAT = '%(levelname)s\t%(name)s\t%(relativeCreated)d\t%(message)s'
+LEVELS = {'debug': logging.DEBUG,
+          'info': logging.INFO,
+          'warning': logging.WARNING,
+          'error': logging.ERROR,
+          'critical': logging.CRITICAL}
+
 
 class AutoEncode():
 	def __init__(self, databaseFile, tmpDir):
@@ -82,7 +96,7 @@ class AutoEncode():
 		self.db.commit()
 	
 	def check(self):
-		print 'check for new files ...'
+		log.info('check for new files ...')
 		cursor = self.db.cursor()
 		sql = """SELECT * FROM incoming ORDER BY date ASC"""
 		cursor.execute(sql);
@@ -90,12 +104,12 @@ class AutoEncode():
 			if ( time.time() - row[0] ) <= self.settings['minimalUntouchedTime']:
 				continue
 			fromPath = row[1].encode('utf-8')
+			log.info('found...\t%s'%fromPath)
 			if os.path.exists(fromPath):
 				self.move(fromPath)
 		cursor.close()
-		
-		#time.sleep(5)
-		#self.check()
+
+		gobject.timeout_add_seconds(5, self.check)
 		
 	def move(self, fromPath):
 		filename = os.path.basename(fromPath)
@@ -127,9 +141,11 @@ class AutoEncode():
 		print 'move from:\t', fromPath
 		print 'move to:\t', toPath
 		print 'encode to:\t', encodePath
-		shutil.copy(fromPath, toPath)
-		#self.delete('incoming', fromPath)
-		#self.insert(toPath)
+		if not os.path.exists(os.path.dirname(toPath)):
+			os.mkdir(os.path.dirname)
+		shutil.move(fromPath, toPath)
+		self.delete('incoming', fromPath)
+		self.insert(toPath)
 		self.encode(toPath, encodePath)
 	
 		
@@ -146,7 +162,9 @@ class AutoEncode():
 				outF = f[0] + '_' + preset
 			print outF
 			t1 = time.time()
-			print 'start:\t', time.strftime('%H:%M:%S',time.localtime(t1))
+			log.info('in:\t%s'%iF)
+			log.info('out:\t%s'%outF)
+			log.info('start:\t%s'%time.strftime('%H:%M:%S',time.localtime(t1)))
 			print subprocess.Popen(
 				[	'ffmpeg',
 					'-y', 
@@ -171,14 +189,14 @@ class AutoEncode():
 				stderr=subprocess.STDOUT
 				).communicate()[0]
 			t2 = time.time()
-			print 'end:\t', time.strftime('%H:%M:%S',time.localtime(t2))
+			log.info('end:\t%s'%time.strftime('%H:%M:%S',time.localtime(t2)))
 			t = t2 - t1
 			h = int(t / 3600)
 			t -= h * 3600
 			m = int(t / 60)
 			t -= m * 60
 			s = '%s - %i h %i m %i s'%(preset,h,m,t)
-			print s
+			log.info(s)
 			times[preset] = {
 				'start': time.strftime('%H:%M:%S',time.localtime(t1)),
 				'end':  time.strftime('%H:%M:%S',time.localtime(t2)),
@@ -187,6 +205,17 @@ class AutoEncode():
 		pprint.pprint(times)
 	
 if __name__ == '__main__':
+	######################
+	# initialize logfile #
+	######################
+	logging.basicConfig(filename=LOGFILE, filemode='w', format=LOGFORMAT)
+	log = logging.getLogger('Log')
+	level = logging.NOTSET
+	if len(sys.argv) > 1:
+		level_name = sys.argv[1]
+		level = LEVELS.get(level_name, logging.NOTSET)
+	level = logging.DEBUG
+	log.setLevel(level)
 	#####################
 	# parse config file #
 	#####################
@@ -212,5 +241,5 @@ if __name__ == '__main__':
 	
 	myAE = AutoEncode(databaseFile, tmpDir)
 	
-	
+	gtk.main()
 	

@@ -21,9 +21,24 @@ import time
 import os
 import sqlite3
 
+import pprint
+
+import sys
+import logging
+import logging.handlers
+
+LOGFILE = './log-watch'
+LOGFORMAT = '%(levelname)s\t%(name)s\t%(relativeCreated)d\t%(message)s'
+LEVELS = {'debug': logging.DEBUG,
+          'info': logging.INFO,
+          'warning': logging.WARNING,
+          'error': logging.ERROR,
+          'critical': logging.CRITICAL}
+
 class EventHandler(pyinotify.ProcessEvent):
 	def __init__(self, databaseFile):
 		''' initializes EventHandler '''
+		log.info('init EventHandler')
 		pyinotify.ProcessEvent.__init__(self)
 		self.db = sqlite3.connect(databaseFile)
 	
@@ -44,13 +59,13 @@ class EventHandler(pyinotify.ProcessEvent):
 
 	def process_IN_CLOSE_WRITE(self, event):
 		''' event handler for close file after writing event - insert path '''
-		print 'close:\t', event.pathname
+		log.info('close:\t' + event.pathname)
 		self.delete(event.pathname) # TODO use UPDATE
 		self.insert(event.pathname)
-	
+		
 	def process_IN_DELETE(self, event):
 		''' event handler for delete event - removes path'''
-		print 'delete:\t', event.pathname
+		log.info('delete:\t' + event.pathname)
 		self.delete(event.pathname)
 		
 	def insert(self, path):
@@ -70,6 +85,17 @@ class EventHandler(pyinotify.ProcessEvent):
 		self.db.commit()
 
 if __name__ == '__main__':
+	######################
+	# initialize logfile #
+	######################
+	logging.basicConfig(filename=LOGFILE, filemode='w', format=LOGFORMAT)
+	log = logging.getLogger('Log')
+	level = logging.NOTSET
+	if len(sys.argv) > 1:
+		level_name = sys.argv[1]
+		level = LEVELS.get(level_name, logging.NOTSET)
+	level = logging.DEBUG
+	log.setLevel(level)
 	#####################
 	# parse config file #
 	#####################
