@@ -21,13 +21,18 @@ import sqlite3
 import os
 import shutil
 
+import subprocess
+import string
+
 import gtk
+
+import pprint
 
 
 class AutoEncode():
 	def __init__(self, databaseFile, tmpDir):
 		''' initializes AutoEncode '''
-		self.tmpDir = tmpDir
+		self.tmpDir = tmpDir	
 		self.settings = {}
 		self.settings['minimalUntouchedTime'] = 3
 	
@@ -85,21 +90,101 @@ class AutoEncode():
 			if ( time.time() - row[0] ) <= self.settings['minimalUntouchedTime']:
 				continue
 			fromPath = row[1].encode('utf-8')
-			toPath = os.path.realpath(os.path.join(self.tmpDir,os.path.basename(fromPath)))
-			if os.path.exists(toPath):
-				toPath += '2'
-			print 'moving ...', fromPath, ' => ', toPath
-			shutil.move(fromPath, toPath)
-			self.delete('incoming', fromPath)
-			self.insert(toPath)
+			if os.path.exists(fromPath):
+				self.move(fromPath)
 		cursor.close()
 		
-#				print 'moving file - ' + tmpPath
-#				toRemove.append(tmpPath)
-#				shutil.move(tmpPath,self.tmpDir)
+		#time.sleep(5)
+		#self.check()
+		
+	def move(self, fromPath):
+		filename = os.path.basename(fromPath)
+		print 'from:\t\t', string.rsplit(fromPath,'/',1)[0]
+		print 'to:\t\t', os.path.realpath(self.tmpDir)
+		filename = string.rsplit(filename,'.',1)
+		if len(filename) == 2:
+			extension = '.' + filename[1]
+		else:
+			extension = ''
+		encodeFilename = filename[0] + '_encode'
+		filename = filename[0] + '_original'
+		
+		print 'filename:\t', filename
+		print 'extension:\t',  extension
+		toPath = os.path.realpath(os.path.join(self.tmpDir,filename + extension))
+		encodePath = os.path.realpath(os.path.join(self.tmpDir,encodeFilename + '.mp4'))		
+		if os.path.exists(toPath):
+			filename += '_new'
+			print 'new filename:\t', filename
 			
-		time.sleep(30)
-		self.check()	
+		if os.path.exists(encodePath):
+			encodeFilename += '_new'
+			print 'new eFilename:\t', encodeFilename
+		
+		encodeFilename += '.mp4'
+		filename += extension		
+		toPath = os.path.realpath(os.path.join(self.tmpDir,filename))
+		print 'move from:\t', fromPath
+		print 'move to:\t', toPath
+		print 'encode to:\t', encodePath
+		shutil.copy(fromPath, toPath)
+		#self.delete('incoming', fromPath)
+		#self.insert(toPath)
+		self.encode(toPath, encodePath)
+	
+		
+	def encode(self,iF, oF):
+		times = {}
+		presets = ['slow', 'medium', 'normal', 'fast', 'faster', 'default', 'veryfast', 'ultrafast', 'veryslow']
+		presets = ['hq', 'max']
+		for preset in presets:
+			print preset
+			f = string.rsplit(oF,'.',1)
+			if len(f) == 2:
+				outF = f[0] + '_' + preset + '.' + f[1]
+			else:
+				outF = f[0] + '_' + preset
+			print outF
+			t1 = time.time()
+			print 'start:\t', time.strftime('%H:%M:%S',time.localtime(t1))
+			print subprocess.Popen(
+				[	'ffmpeg',
+					'-y', 
+					'-i', 
+					iF, 
+					'-deinterlace', 
+					'-vcodec',
+					'libx264',
+					'-vpre',
+					preset,
+					'-f',
+					'mp4',
+					'-acodec',
+					'libfaac',
+					'-threads',
+					'0',
+					'-crf',
+					'22',
+					outF,
+				], 
+				stdout=subprocess.PIPE,
+				stderr=subprocess.STDOUT
+				).communicate()[0]
+			t2 = time.time()
+			print 'end:\t', time.strftime('%H:%M:%S',time.localtime(t2))
+			t = t2 - t1
+			h = int(t / 3600)
+			t -= h * 3600
+			m = int(t / 60)
+			t -= m * 60
+			s = '%s - %i h %i m %i s'%(preset,h,m,t)
+			print s
+			times[preset] = {
+				'start': time.strftime('%H:%M:%S',time.localtime(t1)),
+				'end':  time.strftime('%H:%M:%S',time.localtime(t2)),
+				'time': s
+			}
+		pprint.pprint(times)
 	
 if __name__ == '__main__':
 	#####################
