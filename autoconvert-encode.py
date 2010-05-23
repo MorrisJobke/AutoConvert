@@ -148,10 +148,12 @@ class AutoEncode():
 		self.insert(toPath)
 		self.encode(toPath, encodePath)
 	
+		gobject.timeout_add_seconds(5, self.check)
+	
 		
 	def encode(self,iF, oF):
 		times = {}
-		presets = ['slow', 'medium', 'normal', 'fast', 'faster', 'default', 'veryfast', 'ultrafast', 'veryslow', 'hq', 'max']
+		presets = ['ultrafast', 'veryfast', 'faster', 'fast', 'medium', 'default', 'normal', 'slow', 'hq', 'max']
 		for preset in presets:
 			print preset
 			f = string.rsplit(oF,'.',1)
@@ -224,4 +226,3 @@ if __name__ == '__main__':
 	myAE = AutoEncode(databaseFile, tmpDir)
 	
 	gtk.main()
-	
