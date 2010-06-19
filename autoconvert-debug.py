@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #
+# -*- coding: utf-8 -*-
+#
 # Copyright (C) Morris Jobke 2010 <morris.jobke@googlemail.com>
 # 
 # AutoConvert is free software: you can redistribute it and/or modify it

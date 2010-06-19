@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #
+# -*- coding: utf-8 -*-
+#
 # Copyright (C) Morris Jobke 2010 <morris.jobke@googlemail.com>
 # 
 # AutoConvert is free software: you can redistribute it and/or modify it
@@ -59,20 +61,23 @@ class EventHandler(pyinotify.ProcessEvent):
 
 	def process_IN_CLOSE_WRITE(self, event):
 		''' event handler for close file after writing event - insert path '''
-		log.info('close:\t' + event.pathname)
-		self.delete(event.pathname) # TODO use UPDATE
-		self.insert(event.pathname)
+		path = unicode(event.pathname, 'utf-8')
+		log.info('close:\t' + path)
+		self.delete(path) # TODO use UPDATE
+		self.insert(path)
 
 	def process_IN_MOVED_TO(self, event):
 		''' event handler for move file event - insert path '''
-		log.info('moved:\t' + event.pathname)
-		self.delete(event.pathname) # TODO use UPDATE
-		self.insert(event.pathname)
+		path = unicode(event.pathname, 'utf-8')
+		log.info('moved:\t' + path)
+		self.delete(path) # TODO use UPDATE
+		self.insert(path)
 		
 	def process_IN_DELETE(self, event):
 		''' event handler for delete event - removes path'''
-		log.info('delete:\t' + event.pathname)
-		self.delete(event.pathname)
+		path = unicode(event.pathname, 'utf-8')
+		log.info('delete:\t' + path)
+		self.delete(path)
 		
 	def insert(self, path):
 		''' insert path and timestamp '''

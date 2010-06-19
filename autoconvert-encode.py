@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #
+# -*- coding: utf-8 -*-
+#
 # Copyright (C) Morris Jobke 2010 <morris.jobke@googlemail.com>
 # 
 # AutoConvert is free software: you can redistribute it and/or modify it
@@ -160,6 +162,7 @@ class AutoEncode():
 		log.info('start:\t%s'%time.strftime('%H:%M:%S',time.localtime(t1)))
 		cmd = 'ffmpeg -y -i "%s" -deinterlace -vcodec libx264 -vpre %s -f mp4 -acodec copy -threads 0 -crf 22 "%s"'%(iF, preset, oF)
 		#print '\n', cmd, '\n'
+		log.info(cmd)
 		print subprocess.Popen(
 			cmd,
 			shell=True
