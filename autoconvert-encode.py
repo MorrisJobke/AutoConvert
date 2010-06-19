@@ -96,12 +96,12 @@ class AutoEncode():
 		self.db.commit()
 	
 	def check(self):
-		log.info('check for new files ...')
+#		log.info('check for new files ...')
 		cursor = self.db.cursor()
 		sql = """SELECT * FROM incoming ORDER BY date ASC"""
 		cursor.execute(sql);
 		for row in cursor:
-			if ( time.time() - row[0] ) <= self.settings['minimalUntouchedTime']:
+			if ( time.time() - row[0] ) / 60 <= self.settings['minimalUntouchedTime']:
 				continue
 			fromPath = row[1].encode('utf-8')
 			log.info('found...\t%s'%fromPath)
@@ -186,7 +186,11 @@ if __name__ == '__main__':
 	######################
 	# initialize logfile #
 	######################
-	logging.basicConfig(filename=LOGFILE, filemode='a', format=LOGFORMAT)
+	logFile = os.path.join(
+                sys.path[0],
+                LOGFILE
+        )	
+	logging.basicConfig(filename=logFile, filemode='a', format=LOGFORMAT)
 	log = logging.getLogger('Log')
 	level = logging.NOTSET
 	if len(sys.argv) > 1:

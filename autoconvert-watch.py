@@ -94,7 +94,11 @@ if __name__ == '__main__':
 	######################
 	# initialize logfile #
 	######################
-	logging.basicConfig(filename=LOGFILE, filemode='a', format=LOGFORMAT)
+	logFile = os.path.join(
+                sys.path[0],
+                LOGFILE
+        )
+	logging.basicConfig(filename=logFile, filemode='a', format=LOGFORMAT)
 	log = logging.getLogger('Log')
 	level = logging.NOTSET
 	if len(sys.argv) > 1:
