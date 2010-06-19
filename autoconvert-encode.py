@@ -153,46 +153,38 @@ class AutoEncode():
 		
 	def encode(self,iF, oF):
 		times = {}
-		presets = ['ultrafast', 'veryfast', 'faster', 'fast', 'medium', 'default', 'normal', 'slow', 'hq', 'max']
-		for preset in presets:
-			print preset
-			f = string.rsplit(oF,'.',1)
-			if len(f) == 2:
-				outF = f[0] + '_' + preset + '.' + f[1]
-			else:
-				outF = f[0] + '_' + preset
-			print outF
-			t1 = time.time()
-			log.info('in:\t%s'%iF)
-			log.info('out:\t%s'%outF)
-			log.info('start:\t%s'%time.strftime('%H:%M:%S',time.localtime(t1)))
-			cmd = 'ffmpeg -y -i "%s" -deinterlace -vcodec libx264 -vpre %s -f mp4 -acodec libfaac -threads 0 -crf 22 "%s"'%(iF, preset, outF)
-			print '\n', cmd, '\n'
-			print subprocess.Popen(
-				cmd,
-				shell=True
-				).communicate()[0]
-			t2 = time.time()
-			log.info('end:\t%s'%time.strftime('%H:%M:%S',time.localtime(t2)))
-			t = t2 - t1
-			h = int(t / 3600)
-			t -= h * 3600
-			m = int(t / 60)
-			t -= m * 60
-			s = '%s - %i h %i m %i s'%(preset,h,m,t)
-			log.info(s)
-			times[preset] = {
-				'start': time.strftime('%H:%M:%S',time.localtime(t1)),
-				'end':  time.strftime('%H:%M:%S',time.localtime(t2)),
-				'time': s
-			}
+		preset = 'faster'
+		t1 = time.time()
+		log.info('in:\t%s'%iF)
+		log.info('out:\t%s'%oF)
+		log.info('start:\t%s'%time.strftime('%H:%M:%S',time.localtime(t1)))
+		cmd = 'ffmpeg -y -i "%s" -deinterlace -vcodec libx264 -vpre %s -f mp4 -acodec copy -threads 0 -crf 22 "%s"'%(iF, preset, oF)
+		#print '\n', cmd, '\n'
+		print subprocess.Popen(
+			cmd,
+			shell=True
+			).communicate()[0]
+		t2 = time.time()
+		log.info('end:\t%s'%time.strftime('%H:%M:%S',time.localtime(t2)))
+		t = t2 - t1
+		h = int(t / 3600)
+		t -= h * 3600
+		m = int(t / 60)
+		t -= m * 60
+		s = '%s - %i h %i m %i s'%(preset,h,m,t)
+		log.info(s)
+		times = {
+			'start': time.strftime('%H:%M:%S',time.localtime(t1)),
+			'end':  time.strftime('%H:%M:%S',time.localtime(t2)),
+			'time': s
+		}
 		pprint.pprint(times)
 	
 if __name__ == '__main__':
 	######################
 	# initialize logfile #
 	######################
-	logging.basicConfig(filename=LOGFILE, filemode='w', format=LOGFORMAT)
+	logging.basicConfig(filename=LOGFILE, filemode='a', format=LOGFORMAT)
 	log = logging.getLogger('Log')
 	level = logging.NOTSET
 	if len(sys.argv) > 1:
@@ -204,8 +196,12 @@ if __name__ == '__main__':
 	# parse config file #
 	#####################
 	config = ConfigParser.ConfigParser()
-	if os.path.exists('settings.conf'):
-		config.read('settings.conf')
+	settingsFile = os.path.join(
+		sys.path[0],
+		'settings.conf'
+	)
+	if os.path.exists(settingsFile):
+		config.read(settingsFile)
 		
 		#################
 		# load settings #

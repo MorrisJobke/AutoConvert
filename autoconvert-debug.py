@@ -22,17 +22,17 @@ if __name__ == '__main__':
     ##############
     # initialize #
 	##############
-	db = sqlite3.connect('files.db')
+	db = sqlite3.connect('/home/jobke/AutoConvert/files.db')
 	cursor = db.cursor()
 	sql = """SELECT * FROM incoming ORDER BY date ASC"""
 	cursor.execute(sql);
 	print 'incoming'
 	for row in cursor:
 		print row	
-	sql = """SELECT * FROM encode ORDER BY date ASC"""
-	cursor.execute(sql);
-	print 'encode'
-	for row in cursor:
-		print row
+#	sql = """SELECT * FROM encode ORDER BY date ASC"""
+#	cursor.execute(sql);
+#	print 'encode'
+#	for row in cursor:
+#		print row
 	cursor.close()
 	db.close()		

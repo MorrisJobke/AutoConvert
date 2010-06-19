@@ -94,7 +94,7 @@ if __name__ == '__main__':
 	######################
 	# initialize logfile #
 	######################
-	logging.basicConfig(filename=LOGFILE, filemode='w', format=LOGFORMAT)
+	logging.basicConfig(filename=LOGFILE, filemode='a', format=LOGFORMAT)
 	log = logging.getLogger('Log')
 	level = logging.NOTSET
 	if len(sys.argv) > 1:
@@ -108,8 +108,12 @@ if __name__ == '__main__':
 	# parse config file #
 	#####################
 	config = ConfigParser.ConfigParser()
-	if os.path.exists('settings.conf'):
-		config.read('settings.conf')
+	settingsFile = os.path.join(
+		sys.path[0],
+		'settings.conf'
+	)
+	if os.path.exists(settingsFile):
+		config.read(settingsFile)
 		
 		#################
 		# load settings #
