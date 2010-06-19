@@ -173,13 +173,15 @@ class AutoEncode():
 		t -= m * 60
 		s = '%s - %i h %i m %i s'%(preset,h,m,t)
 		log.info(s)
-		times = {
-			'start': time.strftime('%H:%M:%S',time.localtime(t1)),
-			'end':  time.strftime('%H:%M:%S',time.localtime(t2)),
-			'time': s
-		}
-		pprint.pprint(times)
-	
+		cmd = 'touch "%s.finished"'%oF
+		subprocess.Popen(cmd)
+#		times = {
+#			'start': time.strftime('%H:%M:%S',time.localtime(t1)),
+#			'end':  time.strftime('%H:%M:%S',time.localtime(t2)),
+#			'time': s
+#		}
+#		pprint.pprint(times)
+
 if __name__ == '__main__':
 	######################
 	# initialize logfile #
