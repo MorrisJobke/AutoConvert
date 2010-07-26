@@ -43,8 +43,7 @@ LEVELS = {'debug': logging.DEBUG,
           'warning': logging.WARNING,
           'error': logging.ERROR,
           'critical': logging.CRITICAL}
-
-
+          
 class AutoEncode():
 	def __init__(self, databaseFile, tmpDir):
 		''' initializes AutoEncode '''
@@ -98,7 +97,7 @@ class AutoEncode():
 		self.db.commit()
 	
 	def check(self):
-#		log.info('check for new files ...')
+		print 'check for new files ...'
 		cursor = self.db.cursor()
 		sql = """SELECT * FROM incoming ORDER BY date ASC"""
 		cursor.execute(sql);
@@ -161,7 +160,6 @@ class AutoEncode():
 		log.info('out:\t%s'%oF)
 		log.info('start:\t%s'%time.strftime('%H:%M:%S',time.localtime(t1)))
 		cmd = 'ffmpeg -y -i "%s" -deinterlace -vcodec libx264 -vpre %s -f mp4 -acodec copy -threads 0 -crf 22 "%s"'%(iF, preset, oF)
-		#print '\n', cmd, '\n'
 		log.info(cmd)
 		print subprocess.Popen(
 			cmd,
@@ -178,12 +176,6 @@ class AutoEncode():
 		log.info(s)
 		cmd = 'touch "%s.finished"'%oF
 		subprocess.Popen(cmd)
-#		times = {
-#			'start': time.strftime('%H:%M:%S',time.localtime(t1)),
-#			'end':  time.strftime('%H:%M:%S',time.localtime(t2)),
-#			'time': s
-#		}
-#		pprint.pprint(times)
 
 if __name__ == '__main__':
 	######################
