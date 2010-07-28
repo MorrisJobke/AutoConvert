@@ -17,17 +17,20 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from database import Database
+
 import pyinotify
-import ConfigParser
 import time
 import os
-import sqlite3
 
 import pprint
 
 import sys
 import logging
 import logging.handlers
+
+WATCHINGDIR = '~/tmp'
+WATCHINGDIR = os.path.expanduser(WATCHINGDIR)
 
 LOGFILE = './log-watch'
 LOGFORMAT = '%(levelname)s\t%(name)s\t%(relativeCreated)d\t%(message)s'
@@ -38,62 +41,47 @@ LEVELS = {'debug': logging.DEBUG,
           'critical': logging.CRITICAL}
 
 class EventHandler(pyinotify.ProcessEvent):
-	def __init__(self, databaseFile):
+	def __init__(self):
 		''' initializes EventHandler '''
 		log.debug('init EventHandler')
 		pyinotify.ProcessEvent.__init__(self)
-		self.db = sqlite3.connect(databaseFile)
-	
-		cursor = self.db.cursor()
-		sql = """
-		CREATE TABLE IF NOT EXISTS incoming (
-			date INTEGER,
-			file TEXT
-		)"""
-		cursor.execute(sql);
-		cursor.close()
+		self.db = Database()
+		self.check()
 		
-		self.db.commit()
-		
-	def __del__(self):
-		''' destructor '''
-		self.db.close()
+	def check(self):
+		files = os.listdir(WATCHINGDIR)
+		for f in files:
+			f = os.path.join(WATCHINGDIR, f)
+			if os.path.isfile(f):
+				self.db.update(f, os.path.getsize(f))
 
 	def process_IN_CLOSE_WRITE(self, event):
 		''' event handler for close file after writing event - insert path '''
 		path = unicode(event.pathname, 'utf-8')
 		log.info('close:\t' + path)
-		self.delete(path) # TODO use UPDATE
-		self.insert(path)
+		try:
+			size = os.path.getsize(path)
+		except Exception, e:
+			pass
+		else:
+			self.db.update(path, size)
 
 	def process_IN_MOVED_TO(self, event):
 		''' event handler for move file event - insert path '''
 		path = unicode(event.pathname, 'utf-8')
 		log.info('moved:\t' + path)
-		self.delete(path) # TODO use UPDATE
-		self.insert(path)
+		try:
+			size = os.path.getsize(path)
+		except Exception, e:
+			pass
+		else:
+			self.db.update(path, size)
 		
 	def process_IN_DELETE(self, event):
 		''' event handler for delete event - removes path'''
 		path = unicode(event.pathname, 'utf-8')
 		log.info('delete:\t' + path)
-		self.delete(path)
-		
-	def insert(self, path):
-		''' insert path and timestamp '''
-		cursor = self.db.cursor()
-		sql = 'INSERT INTO incoming VALUES (?, ?)'
-		cursor.execute(sql, [int(time.time()), path])
-		cursor.close()
-		self.db.commit()
-		
-	def delete(self, path):
-		''' delete path from db '''
-		cursor = self.db.cursor()
-		sql = 'DELETE FROM incoming WHERE file=?'
-		cursor.execute(sql, (path,))
-		cursor.close()
-		self.db.commit()
+		self.db.delete(path)
 
 if __name__ == '__main__':
 	######################
@@ -113,35 +101,14 @@ if __name__ == '__main__':
 	level = logging.INFO
 	# TMP ^^^^^^^^^^^^^^
 	log.setLevel(level)
-	#####################
-	# parse config file #
-	#####################
-	config = ConfigParser.ConfigParser()
-	settingsFile = os.path.join(
-		sys.path[0],
-		'settings.conf'
-	)
-	if os.path.exists(settingsFile):
-		config.read(settingsFile)
-		
-		#################
-		# load settings #
-		#################
-		watchingDir = config.get('Main', 'watchingDirectory')
-		databaseFile = config.get('Main', 'database')
-	else:
-		###############
-		# set default #
-		###############
-		watchingDir = '/home'
-		databaseFile = '/tmp/files.db'
-	watchingMask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE | pyinotify.IN_MOVED_TO
     
     ##############
     # initialize #
 	##############
 	watchManager = pyinotify.WatchManager()
-	handler = EventHandler(databaseFile)
-	notifier = pyinotify.Notifier(watchManager, handler)
-	watchManager.add_watch(watchingDir, watchingMask)
+	notifier = pyinotify.Notifier(watchManager, EventHandler())
+	watchManager.add_watch(
+		WATCHINGDIR, 
+		pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE | pyinotify.IN_MOVED_TO
+	)
 	notifier.loop()

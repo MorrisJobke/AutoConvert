@@ -17,24 +17,19 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import ConfigParser
-import sqlite3
+from database import Database
+import time
 
 if __name__ == '__main__':
-    ##############
-    # initialize #
-	##############
-	db = sqlite3.connect('/home/jobke/AutoConvert/files.db')
-	cursor = db.cursor()
-	sql = """SELECT * FROM incoming ORDER BY date ASC"""
-	cursor.execute(sql);
-	print 'incoming'
-	for row in cursor:
-		print row	
-#	sql = """SELECT * FROM encode ORDER BY date ASC"""
-#	cursor.execute(sql);
-#	print 'encode'
-#	for row in cursor:
-#		print row
-	cursor.close()
-	db.close()		
+	db = Database()
+	r = db.get()
+	for i in r:
+		d = int(time.time()) - i[0]
+		s = d%60
+		d /= 60
+		m = d%60
+		d /= 60
+		diff = '- %ih %im %is'%(d, m, s)
+		t = time.strftime( '%d.%m.%Y %H:%M:%S' ,time.localtime(i[0]))
+		print '%s\t %-30s\t %i\t %s'%(t, i[1], i[2], diff)
+	
