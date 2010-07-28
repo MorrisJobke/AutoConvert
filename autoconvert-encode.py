@@ -58,6 +58,10 @@ class AutoEncode():
 			if not os.path.exists(f[1]):
 				self.db.delete(f[1].encode('utf-8'))
 				continue
+			
+			if os.path.getsize(f[1]) != f[2]:
+				self.db.update(f[1], os.path.getsize(f[1]))
+				continue
 				
 			if time.time() - f[0] <= WAITTIME:
 				continue
