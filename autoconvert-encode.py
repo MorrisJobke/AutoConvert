@@ -70,8 +70,11 @@ class AutoEncode():
 				log.info('found...\t%s'%f[1])
 				self.process(f[1])
 			else:
-				pass
-				#TODO
+				if os.path.exists(f[3] + '.finished'):
+					self.db.delete(f[1])
+				else:
+					shutil.move(f[3], f[1])
+					os.remove(f[4])
 		
 		#gobject.timeout_add_seconds(30, self.check)
 			
@@ -127,7 +130,7 @@ class AutoEncode():
 			path['to']['original'] += '#'
 			path['to']['encode'] += '#'
 		
-		self.db.encode(fromPath, p1)
+		self.db.encode(fromPath, p1, p2)
 		shutil.move(fromPath, p1)
 		self.encode(p1, p2)
 		self.db.delete(fromPath)				
@@ -139,7 +142,7 @@ class AutoEncode():
 		log.info('out:\t%s'%oF)
 		log.info('start:\t%s'%time.strftime('%H:%M:%S',time.localtime(t1)))
 		cmd = 'ffmpeg -y -i "%s" -deinterlace -vcodec libx264 -vpre %s -f mp4 -acodec copy -threads 0 -crf 22 "%s"'%(iF, PRESET, oF)
-		log.info(cmd)
+		#log.info(cmd)
 		print subprocess.Popen(
 			cmd,
 			shell=True
@@ -153,7 +156,7 @@ class AutoEncode():
 		t -= m * 60
 		s = '%s - %i h %i m %i s'%(PRESET,h,m,t)
 		log.info(s)
-		subprocess.Popen('touch "%s.finished"'%oF, shell=True)
+		subprocess.Popen('touch "%s.finished"'%iF, shell=True)
 
 if __name__ == '__main__':
 	######################

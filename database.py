@@ -34,7 +34,8 @@ class Database:
 			date INTEGER,
 			file TEXT,
 			size INTEGER,
-			encodefile TEXT
+			encodefile TEXT,
+			encodetofile TEXT
 		)"""
 		cursor = self.db.cursor()
 		cursor.execute(sql)
@@ -89,11 +90,11 @@ class Database:
 		cursor.close()
 		return result
 	
-	def encode(self, fileName, fileNameEncode):
+	def encode(self, fileName, fileNameEncode, fileNameEncodeTo):
 		if self.exists(fileName):
-			sql = 'UPDATE files SET encodefile = ? WHERE file = ?'
+			sql = 'UPDATE files SET encodefile = ?, encodetofile = ? WHERE file = ?'
 			cursor = self.db.cursor()
-			cursor.execute(sql, [fileNameEncode, fileName ])
+			cursor.execute(sql, [fileNameEncode, fileNameEncodeTo, fileName ])
 			cursor.close()
 			self.db.commit()
 		
