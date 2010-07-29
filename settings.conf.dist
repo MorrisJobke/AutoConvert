@@ -1,4 +1,0 @@
-[Main]
-watchingDirectory = ../tmp/convertTest
-tmpDirectory = %(watchingDirectory)s/tmp
-database = files.db

@@ -65,15 +65,20 @@ class AutoEncode():
 				
 			if time.time() - f[0] <= WAITTIME:
 				continue
-			
-			log.info('found...\t%s'%f[1])
-			self.process(f[1])
+				
+			if f[3] == '.':
+				log.info('found...\t%s'%f[1])
+				self.process(f[1])
+			else:
+				pass
+				#TODO
 		
 		#gobject.timeout_add_seconds(30, self.check)
 			
 	def process(self, fromPath):
 		path = {
 			'ext': '',
+			'encodeext': '.mp4',
 			'from':	{
 				'root': '',
 				'name': '',
@@ -115,7 +120,7 @@ class AutoEncode():
 			)
 			p2 = os.path.join(
 				path['to']['root'], 
-				path['to']['encode'] + path['ext']
+				path['to']['encode'] + path['encodeext']
 			)
 			if not( os.path.exists(p1) or os.path.exists(p2) ):
 				break
@@ -148,8 +153,7 @@ class AutoEncode():
 		t -= m * 60
 		s = '%s - %i h %i m %i s'%(PRESET,h,m,t)
 		log.info(s)
-		cmd = 'touch "%s.finished"'%oF
-		subprocess.Popen(cmd)
+		subprocess.Popen('touch "%s.finished"'%oF, shell=True)
 
 if __name__ == '__main__':
 	######################
