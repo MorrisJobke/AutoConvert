@@ -31,5 +31,5 @@ if __name__ == '__main__':
 		d /= 60
 		diff = '%2ih %2im %2is'%(d, m, s)
 		t = time.strftime( '%d.%m.%Y %H:%M:%S' ,time.localtime(i[0]))
-		print '%-20s %-70s %-70s %11i %s'%(t, i[1], i[3], i[2], diff)
+		print '%s %-20s %-150s\n %-70s\n'%(diff, t, i[1], i[3])
 	

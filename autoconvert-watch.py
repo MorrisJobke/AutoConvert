@@ -52,6 +52,7 @@ class EventHandler(pyinotify.ProcessEvent):
 		files = os.listdir(WATCHINGDIR)
 		for f in files:
 			f = os.path.join(WATCHINGDIR, f)
+			f = unicode(f, 'utf-8')
 			if os.path.isfile(f):
 				self.db.update(f, os.path.getsize(f))
 

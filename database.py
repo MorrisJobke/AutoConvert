@@ -43,7 +43,7 @@ class Database:
 		self.db.commit()
 	
 	def insert(self, fileName, fileSize):
-		sql = 'INSERT INTO files VALUES (?, ?, ?, ".")'
+		sql = 'INSERT INTO files VALUES (?, ?, ?, ".", ".")'
 		cursor = self.db.cursor()
 		cursor.execute(sql, [int(time.time()), fileName, fileSize])
 		cursor.close()

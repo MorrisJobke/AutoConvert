@@ -37,7 +37,7 @@ TMPDIR = './in-arbeit'
 WAITTIME = 60
 PRESET = 'faster'
 
-LOGFILE = './log-daemon'
+LOGFILE = './log-encode'
 LOGFORMAT = '%(levelname)s\t%(name)s\t%(relativeCreated)d\t%(message)s'
 LEVELS = {'debug': logging.DEBUG,
           'info': logging.INFO,
