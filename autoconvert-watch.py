@@ -29,10 +29,11 @@ import sys
 import logging
 import logging.handlers
 
-WATCHINGDIR = '~/tmp'
+WATCHINGDIR = '~/Videos/Umwandeln'
 WATCHINGDIR = os.path.expanduser(WATCHINGDIR)
 
-LOGFILE = './log-watch'
+LOGFILE = '~/AutoConvert/log-watch'
+LOGFILE = os.path.expanduser(LOGFILE)
 LOGFORMAT = '%(levelname)s\t%(name)s\t%(relativeCreated)d\t%(message)s'
 LEVELS = {'debug': logging.DEBUG,
           'info': logging.INFO,

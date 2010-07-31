@@ -21,8 +21,6 @@ from database import Database
 
 import time
 import os
-import gobject
-import gtk
 import string
 import shutil
 import subprocess
@@ -37,7 +35,8 @@ TMPDIR = './in-arbeit'
 WAITTIME = 60
 PRESET = 'faster'
 
-LOGFILE = './log-encode'
+LOGFILE = '~/AutoConvert/log-encode'
+LOGFILE = os.path.expanduser(LOGFILE)
 LOGFORMAT = '%(levelname)s\t%(name)s\t%(relativeCreated)d\t%(message)s'
 LEVELS = {'debug': logging.DEBUG,
           'info': logging.INFO,
@@ -75,8 +74,6 @@ class AutoEncode():
 				else:
 					shutil.move(f[3], f[1])
 					os.remove(f[4])
-		
-		#gobject.timeout_add_seconds(30, self.check)
 			
 	def process(self, fromPath):
 		path = {
@@ -180,5 +177,3 @@ if __name__ == '__main__':
 	##############
 	
 	myAE = AutoEncode()
-	
-	#gtk.main()
